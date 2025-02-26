@@ -33,6 +33,12 @@ const handleLogin = async () => {
     }
 
     window.$dialog.success("Đăng nhập thành công!");
+
+    // logout auto sau 1 ngày
+    setTimeout(() => {
+        localStorage.removeItem("user"); 
+    }, 24 * 60 * 60 * 1000); 
+
     setTimeout(() => {
         router.push("/"); 
     }, 1000);

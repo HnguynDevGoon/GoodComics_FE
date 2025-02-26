@@ -8,7 +8,6 @@ import { useRoute } from "vue-router";
 
 const comicStore = useComicStore();
 const commentText = ref("");
-const comments = ref([]);
 const rating = ref(0);
 const currentPage = ref(1);
 const route = useRoute();
@@ -16,7 +15,8 @@ const route = useRoute();
 // Hàm lấy chi tiết comic
 const fetchComicDetail = async (comicId) => {
   await comicStore.fetchComicDetail(comicId);
-  await fetchComicContent(comicId, currentPage.value); // Lấy nội dung comic
+  await fetchComicContent(comicId, currentPage.value);
+  await fetchComments(comicId); // Gọi hàm lấy danh sách bình luận
 };
 
 // Hàm lấy nội dung comic
@@ -24,23 +24,50 @@ const fetchComicContent = async (comicId, pageNumber) => {
   await comicStore.fetchComicContent(comicId, pageNumber);
 };
 
+// Hàm lấy danh sách bình luận
+const fetchComments = async (comicId) => {
+  await comicStore.fetchComments(comicId);
+};
+
 // Khi component được gắn vào DOM
 onMounted(async () => {
   const comicId = route.params.id;
   await fetchComicDetail(comicId);
-  window.scrollTo(0, 0); // Cuộn trang về đầu
+  window.scrollTo(0, 0);
 });
 
-// Hàm gửi bình luận
-const submitComment = () => {
-  if (commentText.value.trim() !== "") {
-    comments.value.push({
-      username: "Người dùng",
-      text: commentText.value,
-      rating: rating.value,
-    });
-    commentText.value = "";
-    rating.value = 0; // Reset số sao sau khi gửi
+const submitComment = async () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  if (!user || !user.id) {
+    window.$dialog.fail("Bạn cần đăng nhập để thêm bình luận!");
+    return;
+  }
+
+  if (commentText.value.trim() === "") {
+    window.$dialog.fail("Vui lòng nhập bình luận!");
+    return;
+  }
+
+  const commentData = {
+    commentTitle: commentText.value,
+    rate: rating.value,
+    comicId: route.params.id,
+  };
+
+  console.log("Dữ liệu gửi đến API:", commentData);
+
+  const result = await comicStore.addNewComment(commentData);
+  console.log("Kết quả từ API:", result); // In ra kết quả
+
+  // Hiển thị thông báo thành công hoặc lỗi từ backend
+  if (result.success) {
+    commentText.value = ""; // Reset text area
+    rating.value = 0; // Reset rating
+    window.$dialog.success(result.message);
+    await fetchComments(route.params.id); // Cập nhật lại danh sách bình luận sau khi thêm
+  } else {
+    window.$dialog.fail(result.message); // Hiển thị thông báo lỗi từ backend
   }
 };
 
@@ -72,7 +99,6 @@ const previousPage = () => {
 };
 </script>
 
-
 <template>
   <Header />
   <NavHeader />
@@ -103,14 +129,22 @@ const previousPage = () => {
           <p>{{ comicStore.comicContent }}</p>
           <div class="pagination">
             <button @click="previousPage" :disabled="currentPage === 1">Trang trước</button>
-            <span>Trang {{ currentPage }} / {{ comicStore.totalPages }}</span>
+            <span>
+              Trang 
+              <select class="select-page" v-model="currentPage" @change="fetchComicContent(route.params.id, currentPage)">
+                <option class="select-page_option" v-for="page in comicStore.totalPages" :key="page" :value="page">
+                  {{ page }}
+                </option>
+              </select>
+              / {{ comicStore.totalPages }}
+            </span>
             <button @click="nextPage" :disabled="currentPage === comicStore.totalPages">Trang sau</button>
           </div>
         </div>
       </div>
 
       <div class="comment-section">
-        <h3>Nhận xét</h3>
+        <h3>Để lại bình luận</h3>
         <div class="rating">
           <span
             v-for="star in 5"
@@ -130,32 +164,27 @@ const previousPage = () => {
           ></textarea>
           <button class="submit-comment" @click="submitComment">Gửi</button>
         </div>
+        
+        <!-- Hiển thị danh sách bình luận ở đây -->
         <div class="comments-list">
-          <div
-            class="comment"
-            v-for="(comment, index) in comments"
-            :key="index"
-          >
-            <img
-              src="../assets/images/slide1.jpg"
-              alt="User Avatar"
-              class="user-avatar"
-            />
-            <div>
-              <div class="comment-rating">
-                <span
-                  v-for="star in 5"
-                  :key="star"
-                  class="star"
-                  :class="{ active: comment.rating >= star }"
-                >
-                  ★
-                </span>
+          <h2>Bình luận</h2>
+          <ul>
+            <li v-for="comment in comicStore.comments" :key="comment.id" class="comment">
+              <div style="display: flex; margin-bottom: 10px;">
+                <img v-if="comment.urlAvatar" :src="comment.urlAvatar" alt="Avatar" class="user-avatar" />
+                <div class="rating">
+                  <span
+                    v-for="star in 5"
+                    :key="star"
+                    class="star"
+                    :class="{ active: comment.rate >= star }"> ★
+                  </span>
+                </div>
               </div>
-              <strong>{{ comment.username }}:</strong>
-              <p>{{ comment.text }}</p>
-            </div>
-          </div>
+              <p><strong>{{ comment.username }}</strong></p>
+              <p>{{ comment.commentTitle }}</p>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -269,19 +298,19 @@ button:disabled {
 
 .rating {
   display: flex;
-  gap: 5px; /* Khoảng cách giữa các sao */
-  margin-bottom: 10px; /* Khoảng cách giữa sao và textarea */
+  gap: 5px;
+  margin-bottom: 0px;
 }
 
 .star {
   font-size: 24px;
-  color: #ddd; /* Màu sao mặc định */
+  color: #ddd; 
   cursor: pointer;
   transition: color 0.3s;
 }
 
 .star.active {
-  color: #ffcc00; /* Màu sao đã chọn */
+  color: #ffcc00; 
 }
 
 .comment-input {
@@ -322,18 +351,18 @@ button:disabled {
 .comment {
   background: #ffffff;
   border-radius: 8px;
-  padding: 10px;
+  padding: 20px;
   margin-bottom: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
-  align-items: center; /* Căn giữa avatar và nội dung */
+  flex-direction: column;
 }
 
 .user-avatar {
-  width: 40px; /* Chiều rộng của avatar */
-  height: 40px; /* Chiều cao của avatar */
-  border-radius: 50%; /* Làm tròn avatar */
-  margin-right: 10px; /* Khoảng cách giữa avatar và tên người dùng */
+  width: 40px; 
+  height: 40px;
+  border-radius: 50%; 
+  margin-right: 10px; 
 }
 
 .comment strong {
@@ -341,7 +370,24 @@ button:disabled {
 }
 
 .comment p {
-  margin: 5px 0 0;
   line-height: 1.5;
 }
+
+.select-page{
+  font-size: 18px;
+  border: none;
+  padding: 8px;
+  background-color: #EEEEEE;
+  border-radius: 40%;
+  cursor: pointer;
+  outline: none;
+  border-bottom: 1px solid black;
+}
+
+.select-page_option{
+  font-style: italic;
+  font-size: 18px;
+  background-color: #ffffff;
+}
+
 </style>

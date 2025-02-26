@@ -48,17 +48,66 @@ export const useComicStore = defineStore("comic", () => {
     const fetchComicContent = async (comicId, pageNumber) => {
         try {
             const response = await axios.get(`https://localhost:7064/api/Comic/GetComicContent?comicId=${comicId}&pageNumber=${pageNumber}`);
-            comicContent.value = response.data; // Lưu nội dung vào biến comicContent
-    
-            // Tính toán tổng số trang trên frontend
-            const totalWords = comicContent.value.split(' ').length; // Đếm số từ trong nội dung
-            totalPages.value = Math.ceil(totalWords / pageSize); 
-    
+            
+            // Lưu nội dung vào biến comicContent
+            comicContent.value = response.data.content;  
+            
+            // Lấy tổng số trang từ phản hồi
+            totalPages.value = response.data.totalPages; 
+
             console.log('Comic Content:', comicContent.value);
+            console.log('Total Pages:', totalPages.value);
         } catch (error) {
             console.error("Không thể lấy nội dung truyện tranh:", error);
         }
     };
+
+    const addNewComment = async (commentData) => {
+        const { commentTitle, rate, comicId } = commentData;
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const userId = userData ? userData.id : null;
+    
+        const url = `https://localhost:7064/api/Comment/AddNewComment?commentTitle=${encodeURIComponent(commentTitle)}&rate=${rate}&userId=${userId}&comicId=${comicId}`;
+    
+        console.log("Dữ liệu gửi đến API:", url);
+    
+        try {
+            const response = await axios.post(url);
+    
+            // Kiểm tra status trả về từ backend
+            if (response.data.status === 200) {
+                return { success: true, message: response.data.message || "Thêm bình luận thành công!" };
+            } else {
+                console.error("Lỗi từ backend:", response.data.message);
+                return { success: false, message: response.data.message || "Lỗi không xác định!" };
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || "Không thể kết nối tới server!";
+            console.error("Lỗi khi gọi API:", errorMessage);
+            return { success: false, message: errorMessage };
+        }
+    };
+    
+    
+    const comments = ref([]); // Danh sách bình luận
+
+    const fetchComments = async (comicId) => {
+        try {
+            const response = await axios.get(`https://localhost:7064/api/Comment/GetListComment?comicId=${comicId}`);
+            comments.value = response.data; // Lưu bình luận theo comicId
+        } catch (error) {
+            console.error("Không thể lấy danh sách bình luận:", error);
+        }
+    };
+    
+    
+
+    
+    
+    
+    
+
+
     
     
     return {
@@ -72,5 +121,8 @@ export const useComicStore = defineStore("comic", () => {
         fetchComicDetail,
         comicContent, 
         fetchComicContent,
+        addNewComment,
+        comments,
+        fetchComments,
     };
 });

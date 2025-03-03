@@ -1,12 +1,25 @@
 <script setup>
 import { onMounted } from 'vue';
+import { useRouter } from 'vue-router'; // Import useRouter
 import { useComicStore } from '../store/comicStore';
 
 const comicStore = useComicStore();
+const router = useRouter(); // Sử dụng useRouter
 
+// Lấy danh sách thể loại truyện
 const fetchComicTypes = async () => {
     await comicStore.fetchComicTypes();
     console.log(comicStore.comicTypes);
+};
+
+// Hàm xử lý khi chọn thể loại
+const displayComicType = (comicType) => {
+    // Gọi API tìm kiếm truyện theo thể loại
+    comicStore.searchComicByTypeName(comicType.comicTypeName);
+    console.log(`Tìm kiếm truyện thể loại: ${comicType.comicTypeName}`);
+
+    // Chuyển hướng đến trang ListComic và truyền thể loại qua query
+    router.push({ name: 'ListComic', query: { type: comicType.comicTypeName } });
 };
 
 onMounted(() => {
@@ -15,25 +28,25 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="navbar">
-        <ul class="navbar-menu">
-            <li><RouterLink to="/"><i class="bx bx-home"></i> Trang Chủ</RouterLink></li>
-            <li class="dropdown">
-                <RouterLink to="#"><i class="bx bx-category"></i> Thể Loại</RouterLink>
-                <ul class="dropdown-menu">
-                    <div class="dropdown-content">
-                        <div v-for="(comicType, index) in comicStore.comicTypes" :key="index" class="dropdown-item" @click="displayComicType(comicType)">
-                            {{ comicType.comicTypeName }} 
-                        </div>
-                    </div>
-                </ul>
-            </li>
-            <li><RouterLink to="/"><i class='bx bx-heart-circle'></i> Yêu Thích</RouterLink></li>
-            <li><RouterLink to="/"><i class="bx bx-history"></i> Lịch Sử Đọc</RouterLink></li>
-            <li><RouterLink to="/Location"><i class='bx bx-current-location'></i> Vị trí</RouterLink></li>
-            <li><RouterLink to="/"><i class='bx bx-message-dots'></i> Đánh giá</RouterLink></li>
+  <div class="navbar">
+    <ul class="navbar-menu">
+      <li><RouterLink to="/"><i class="bx bx-home"></i> Trang Chủ</RouterLink></li>
+      <li class="dropdown">
+        <RouterLink to="#"><i class="bx bx-category"></i> Thể Loại</RouterLink>
+        <ul class="dropdown-menu">
+          <div class="dropdown-content">
+            <div v-for="(comicType, index) in comicStore.comicTypes" :key="index" class="dropdown-item" @click="displayComicType(comicType)">
+              {{ comicType.comicTypeName }}
+            </div>
+          </div>
         </ul>
-    </div>
+      </li>
+      <li><RouterLink to="/Hobby"><i class='bx bx-heart-circle'></i> Yêu Thích</RouterLink></li>
+      <li><RouterLink to="/History"><i class="bx bx-history"></i> Lịch Sử Đọc</RouterLink></li>
+      <li><RouterLink to="/Location"><i class='bx bx-current-location'></i> Vị trí</RouterLink></li>
+      <li><RouterLink to="/"><i class='bx bx-message-dots'></i> Đánh giá</RouterLink></li>
+    </ul>
+  </div>
 </template>
 
 <style scoped>
@@ -43,6 +56,9 @@ onMounted(() => {
     display: flex;
     justify-content: center; 
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .navbar-menu {

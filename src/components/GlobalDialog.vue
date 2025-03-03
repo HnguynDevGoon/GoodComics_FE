@@ -61,6 +61,7 @@ const dialogClass = computed(() => ({
   align-items: center;
   justify-content: center;
   animation: fadeIn 0.3s ease-in-out;
+  z-index: 2000;
 }
 
 /* Hộp dialog chính */

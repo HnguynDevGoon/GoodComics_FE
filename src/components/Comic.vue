@@ -4,6 +4,16 @@ import { useComicStore } from '../store/comicStore';
 
 const comicStore = useComicStore();
 
+// Hàm lưu lịch sử khi người dùng click vào truyện
+const historyComic = async (comicId) => {
+  const userData = JSON.parse(localStorage.getItem('user'));
+  const userId = userData ? userData.id : null;
+
+  if (userId && comicId) {
+    await comicStore.historyComicAfterClick(userId, comicId);
+  }
+}
+
 const displayedPages = computed(() => {
     if (comicStore.totalPages <= 3) {
         return Array.from({ length: comicStore.totalPages }, (_, i) => i + 1);
@@ -35,6 +45,7 @@ const goToPage = (page) => {
 
 onMounted(() => {
     comicStore.fetchComics();
+    historyComic();
 });
 </script>
 
@@ -43,6 +54,7 @@ onMounted(() => {
         <div class="comic-container">
             <router-link
                 v-for="(comic, index) in comicStore.comics" :key="index" class="comic-card" :to="`/DetailComic/${comic.id}`"
+                @click="historyComic(comic.id)"
                 style="text-decoration: none; color: black;">
                 <img :src="comic.urlImage" alt="Comic Image" class="comic-image" />
                 <div class="comic-info">
@@ -74,7 +86,7 @@ onMounted(() => {
 .comic-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: space-evenly;
     padding: 20px;
     max-width: 90%; 
     margin: 0 auto; 

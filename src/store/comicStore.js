@@ -27,8 +27,9 @@ export const useComicStore = defineStore("comic", () => {
             const response = await axios.get(`https://localhost:7064/api/Comic/GetListComic?pageNumber=${pageNumber}&pageSize=${pageSize}`);
             const data = response.data;
             comics.value = data.comics; 
-            totalPages.value = data.totalPages; // Cập nhật tổng số trang
-            currentPage.value = data.currentPage; // Cập nhật trang hiện tại
+            totalPages.value = data.totalPages; 
+            currentPage.value = data.currentPage; 
+            console.log(comics.value);
         } catch (error) {
             console.error("Không thể lấy danh sách truyện tranh:", error);
         }
@@ -38,7 +39,7 @@ export const useComicStore = defineStore("comic", () => {
     const fetchComicDetail = async (comicId) => {
         try {
             const response = await axios.get(`https://localhost:7064/api/Comic/GetComicById?comicId=${comicId}`);
-            comicDetail.value = response.data.data; // Lưu thông tin chi tiết vào biến comicDetail
+            comicDetail.value = response.data.data;
         } catch (error) {
             console.error("Không thể lấy thông tin chi tiết truyện tranh:", error);
         }
@@ -62,6 +63,7 @@ export const useComicStore = defineStore("comic", () => {
         }
     };
 
+    // Hàm thêm comment
     const addNewComment = async (commentData) => {
         const { commentTitle, rate, comicId } = commentData;
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -74,7 +76,6 @@ export const useComicStore = defineStore("comic", () => {
         try {
             const response = await axios.post(url);
     
-            // Kiểm tra status trả về từ backend
             if (response.data.status === 200) {
                 return { success: true, message: response.data.message || "Thêm bình luận thành công!" };
             } else {
@@ -88,9 +89,8 @@ export const useComicStore = defineStore("comic", () => {
         }
     };
     
-    
-    const comments = ref([]); // Danh sách bình luận
-
+    // Hàm hiển thị comment
+    const comments = ref([]); 
     const fetchComments = async (comicId) => {
         try {
             const response = await axios.get(`https://localhost:7064/api/Comment/GetListComment?comicId=${comicId}`);
@@ -100,20 +100,113 @@ export const useComicStore = defineStore("comic", () => {
         }
     };
     
+    // Hàm toggle like và unlike comic
+    const toggleHobby = async (userId, comicId) => {
+        if (!userId || !comicId) {
+            return { success: false, message: "Thiếu userId hoặc comicId!" };
+        }
+    
+        try {
+            const response = await axios.post(`https://localhost:7064/api/Hobby/ToggleHobby?userId=${userId}&comicId=${comicId}`);
+            
+            if (response.data && response.data.status === 200) {
+                return { success: true, message: response.data.message || "Cập nhật trạng thái yêu thích thành công!" };
+            } else {
+                return { success: false, message: response.data.message || "Lỗi không xác định!" };
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || "Không thể kết nối tới server!";
+            console.error("Lỗi khi gọi API:", errorMessage);
+            return { success: false, message: errorMessage };
+        }
+    };
+    
+    // Hàm kiểm tra những truyện đã thích của từng user
+    const getLikeStatus = async (userId, comicId) => {
+        try {
+            const response = await axios.get(`https://localhost:7064/api/Hobby/GetLikeStatus?userId=${userId}&comicId=${comicId}`);
+            return response.data; // Trả về trạng thái yêu thích
+        } catch (error) {
+            console.error("Lỗi khi lấy trạng thái yêu thích:", error);
+            return { success: false, message: "Không thể kết nối tới server!" };
+        }
+    };
+
+    const searchComic = ref([]); // Danh sách truyện
+    // Hàm tìm kiếm truyện theo thể loại
+    const searchComicByTypeName = async (comicTypeName) => {
+        try {
+            const response = await axios.get(`https://localhost:7064/api/Comic/SearchComicByType?comicTypeName=${encodeURIComponent(comicTypeName)}`);
+            
+            // Kiểm tra dữ liệu trả về từ API
+            if (Array.isArray(response.data)) {
+                searchComic.value = response.data; 
+            } else {
+                console.error("Dữ liệu trả về không phải là mảng: ", response.data);
+            }
+        } catch (error) {
+            console.error("Không thể lấy truyện theo thể loại:", error);
+        }
+    };
+
+    // Thêm searchResult để lưu kết quả tìm kiếm
+    const searchName = ref([]); 
+    // Hàm tìm kiếm truyện theo tên
+    const searchComicByName = async (comicName) => {
+        try {
+            const response = await axios.get(`https://localhost:7064/api/Comic/SearchComicByName?comicName=${encodeURIComponent(comicName)}`);
+            if(Array.isArray(response.data)){
+                searchName.value = response.data; 
+            }
+            console.log(searchName.value);
+        } catch (error) {
+            console.error("Không thể tìm kiếm truyện:", error);
+        }
+    };
     
 
+    const historyComicAfterClick = async (userId, comicId) => {
+        console.log("User ID:", userId);
+        console.log("Comic ID:", comicId);
     
-    
-    
-    
+        try {
+            const response = await axios.post(`https://localhost:7064/api/History/AddHistoryAfterClick?userId=${userId}&comicId=${comicId}`);
+            return response.data;
+        } catch (error) {
+            console.error("Lỗi khi lấy trạng thái lịch sử:", error);
+            return { success: false, message: "Không thể kết nối tới server!" };
+        }
+    };
 
-
+    const listHistory = ref([]);
+    const getListHistory = async (userId) => {
+        console.log("User ID:", userId);
+    
+        if (!userId) {
+            console.error("User ID không hợp lệ");
+            return { success: false, message: "User ID không hợp lệ" };
+        }
+    
+        try {
+            const response = await axios.get(`https://localhost:7064/api/History/GetListHistory?userId=${userId}`);
+            listHistory.value = response.data;
+            console.log(listHistory.value);
+            return response.data;
+        } catch (error) {
+            console.error("Lỗi khi lấy trạng thái lịch sử:", error);
+            return { success: false, message: "Không thể kết nối tới server!" };
+        }
+    };
+    
     
     
     return {
         comicTypes,
         fetchComicTypes,
         comics, 
+        searchComic,
+        searchName,
+        listHistory,
         fetchComics,
         currentPage,
         totalPages,
@@ -124,5 +217,11 @@ export const useComicStore = defineStore("comic", () => {
         addNewComment,
         comments,
         fetchComments,
+        toggleHobby,
+        getLikeStatus,
+        searchComicByTypeName,
+        searchComicByName,
+        historyComicAfterClick,
+        getListHistory,
     };
 });

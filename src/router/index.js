@@ -9,6 +9,9 @@ import OtpForgotPassword from '../auth/OtpForgotPassword.vue';
 import UpdatePassword from '../auth/UpdatePassword.vue';
 import Profile from '../auth/Profile.vue';
 import DetailComic from '../views/DetailComic.vue';
+import Hobby from '../views/Hobby.vue';
+import ListComic from '../views/ListComic.vue';
+import History from '../views/History.vue';
 
 const routes = [
     {
@@ -58,6 +61,11 @@ const routes = [
         name: "Profile",
         component: Profile,
     },
+    {
+        path: "/Hobby",
+        name: "Hobby",
+        component: Hobby,
+    },
 
 
     // Comic
@@ -65,6 +73,18 @@ const routes = [
         path: `/DetailComic/:id`,
         name: "DetailComic",
         component: DetailComic,
+    },
+    {
+        path: `/ListComic`,
+        name: "ListComic",
+        component: ListComic,
+    },
+
+    // History
+    {
+        path: `/History`,
+        name: "History",
+        component: History,
     },
 ];
 

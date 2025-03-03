@@ -12,11 +12,34 @@ const rating = ref(0);
 const currentPage = ref(1);
 const route = useRoute();
 
+const isLiked = ref(false); 
+
+const toggleLike = async () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const comicId = route.params.id;
+
+  if (!user || !user.id) {
+    window.$dialog.fail("Bạn cần đăng nhập để thực hiện thao tác này!");
+    return;
+  }
+
+  isLiked.value = !isLiked.value;
+
+  const result = await comicStore.toggleHobby(user.id, comicId);
+  
+  if (result.success) {
+    window.$dialog.success(result.message);
+  } else {
+    window.$dialog.fail(result.message);
+  }
+};
+
 // Hàm lấy chi tiết comic
 const fetchComicDetail = async (comicId) => {
   await comicStore.fetchComicDetail(comicId);
-  await fetchComicContent(comicId, currentPage.value);
+  await fetchComicContent(comicId, currentPage.value); // Gọi hàm lấy danh sách content của truyện
   await fetchComments(comicId); // Gọi hàm lấy danh sách bình luận
+  
 };
 
 // Hàm lấy nội dung comic
@@ -34,10 +57,22 @@ onMounted(async () => {
   const comicId = route.params.id;
   await fetchComicDetail(comicId);
   window.scrollTo(0, 0);
+
+  // kiểm tra trạng thái truyện
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (user && user.id) {
+      const response = await comicStore.getLikeStatus(user.id, comicId);
+      if (response && response.message === "Đã thích truyện!") {
+        isLiked.value = true; 
+      } else {
+        isLiked.value = false; 
+      }
+    }
 });
 
+
 const submitComment = async () => {
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user || !user.id) {
     window.$dialog.fail("Bạn cần đăng nhập để thêm bình luận!");
@@ -62,12 +97,12 @@ const submitComment = async () => {
 
   // Hiển thị thông báo thành công hoặc lỗi từ backend
   if (result.success) {
-    commentText.value = ""; // Reset text area
-    rating.value = 0; // Reset rating
+    commentText.value = ""; 
+    rating.value = 0; 
     window.$dialog.success(result.message);
-    await fetchComments(route.params.id); // Cập nhật lại danh sách bình luận sau khi thêm
+    await fetchComments(route.params.id);
   } else {
-    window.$dialog.fail(result.message); // Hiển thị thông báo lỗi từ backend
+    window.$dialog.fail(result.message); 
   }
 };
 
@@ -97,6 +132,7 @@ const previousPage = () => {
     fetchComicContent(route.params.id, currentPage.value);
   }
 };
+
 </script>
 
 <template>
@@ -118,8 +154,13 @@ const previousPage = () => {
           </p>
           <p><strong>Ngày phát hành:</strong> {{ formattedDate }}</p>
           <p>
-            <strong>Thể loại:</strong> {{ comicStore.comicDetail?.comicTypeName }}
+            <strong>Thể loại:</strong>
+            {{ comicStore.comicDetail?.comicTypeName }}
           </p>
+          <div class="heart-icons">
+            <i class="bx bx-heart" v-if="!isLiked" @click="toggleLike"></i>
+            <i class="bx bxs-heart" v-else @click="toggleLike"></i>
+          </div>
         </div>
       </div>
 
@@ -128,17 +169,33 @@ const previousPage = () => {
           <h3>Nội dung</h3>
           <p>{{ comicStore.comicContent }}</p>
           <div class="pagination">
-            <button @click="previousPage" :disabled="currentPage === 1">Trang trước</button>
+            <button @click="previousPage" :disabled="currentPage === 1">
+              Trang trước
+            </button>
             <span>
-              Trang 
-              <select class="select-page" v-model="currentPage" @change="fetchComicContent(route.params.id, currentPage)">
-                <option class="select-page_option" v-for="page in comicStore.totalPages" :key="page" :value="page">
+              Trang
+              <select
+                class="select-page"
+                v-model="currentPage"
+                @change="fetchComicContent(route.params.id, currentPage)"
+              >
+                <option
+                  class="select-page_option"
+                  v-for="page in comicStore.totalPages"
+                  :key="page"
+                  :value="page"
+                >
                   {{ page }}
                 </option>
               </select>
               / {{ comicStore.totalPages }}
             </span>
-            <button @click="nextPage" :disabled="currentPage === comicStore.totalPages">Trang sau</button>
+            <button
+              @click="nextPage"
+              :disabled="currentPage === comicStore.totalPages"
+            >
+              Trang sau
+            </button>
           </div>
         </div>
       </div>
@@ -164,24 +221,37 @@ const previousPage = () => {
           ></textarea>
           <button class="submit-comment" @click="submitComment">Gửi</button>
         </div>
-        
+
         <!-- Hiển thị danh sách bình luận ở đây -->
         <div class="comments-list">
           <h2>Bình luận</h2>
           <ul>
-            <li v-for="comment in comicStore.comments" :key="comment.id" class="comment">
-              <div style="display: flex; margin-bottom: 10px;">
-                <img v-if="comment.urlAvatar" :src="comment.urlAvatar" alt="Avatar" class="user-avatar" />
+            <li
+              v-for="comment in comicStore.comments"
+              :key="comment.id"
+              class="comment"
+            >
+              <div style="display: flex; margin-bottom: 10px">
+                <img
+                  v-if="comment.urlAvatar"
+                  :src="comment.urlAvatar"
+                  alt="Avatar"
+                  class="user-avatar"
+                />
                 <div class="rating">
                   <span
                     v-for="star in 5"
                     :key="star"
                     class="star"
-                    :class="{ active: comment.rate >= star }"> ★
+                    :class="{ active: comment.rate >= star }"
+                  >
+                    ★
                   </span>
                 </div>
               </div>
-              <p><strong>{{ comment.username }}</strong></p>
+              <p>
+                <strong>{{ comment.username }}</strong>
+              </p>
               <p>{{ comment.commentTitle }}</p>
             </li>
           </ul>
@@ -192,7 +262,6 @@ const previousPage = () => {
 
   <Footer />
 </template>
-
 
 <style scoped>
 .container {
@@ -304,13 +373,13 @@ button:disabled {
 
 .star {
   font-size: 24px;
-  color: #ddd; 
+  color: #ddd;
   cursor: pointer;
   transition: color 0.3s;
 }
 
 .star.active {
-  color: #ffcc00; 
+  color: #ffcc00;
 }
 
 .comment-input {
@@ -359,10 +428,10 @@ button:disabled {
 }
 
 .user-avatar {
-  width: 40px; 
+  width: 40px;
   height: 40px;
-  border-radius: 50%; 
-  margin-right: 10px; 
+  border-radius: 50%;
+  margin-right: 10px;
 }
 
 .comment strong {
@@ -373,21 +442,36 @@ button:disabled {
   line-height: 1.5;
 }
 
-.select-page{
+.select-page {
   font-size: 18px;
   border: none;
   padding: 8px;
-  background-color: #EEEEEE;
+  background-color: #eeeeee;
   border-radius: 40%;
   cursor: pointer;
   outline: none;
   border-bottom: 1px solid black;
 }
 
-.select-page_option{
+.select-page_option {
   font-style: italic;
   font-size: 18px;
   background-color: #ffffff;
 }
 
+.heart-icons {
+  display: flex;
+  align-items: center;
+}
+
+.bx-heart {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.bxs-heart {
+  font-size: 24px;
+  color: red;
+  cursor: pointer;
+}
 </style>

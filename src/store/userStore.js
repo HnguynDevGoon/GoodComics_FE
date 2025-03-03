@@ -239,6 +239,34 @@ export const useUserStore = defineStore("user", () => {
         }
     };
     
+
+    const hobbies = ref([]);
+    const getListHobbies = async (userId) => {
+        loading.value = true;
+        error.value = null;
+    
+        try {
+            // Gọi API
+            const response = await axios.get(`https://localhost:7064/api/Hobby/GetListHobby?userId=${userId}`);
+            console.log("Phản hồi từ API:", response.data);
+    
+            // Kiểm tra nếu dữ liệu trả về có đúng
+            if (response.data && Array.isArray(response.data)) {
+                hobbies.value = response.data;  
+                return { success: true, hobbies: hobbies.value };
+            } else {
+                return { success: false, message: "Không có sở thích nào!" };
+            }
+        } catch (err) {
+            console.error("Lỗi chi tiết:", err);
+            error.value = err.response?.data?.message || "Không thể kết nối tới server!";
+            return { success: false, message: error.value };
+        } finally {
+            loading.value = false;
+        }
+    };
+    
+    
     
     
     
@@ -247,6 +275,7 @@ export const useUserStore = defineStore("user", () => {
         loading, 
         error,
         user, 
+        hobbies,
         createUser, 
         login, 
         logout,
@@ -255,5 +284,6 @@ export const useUserStore = defineStore("user", () => {
         forgotPassword,
         checkOtp,
         updatePassAfterOtp,
+        getListHobbies,
     };
 });

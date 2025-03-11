@@ -10,11 +10,12 @@ const comicStore = useComicStore();
 const comics = ref([]);
 const route = useRoute();
 const noResults = ref(false);
+const visibleCount = ref(4); // Số lượng truyện hiển thị ban đầu
 
 // Hàm tìm kiếm truyện theo tên từ store
 const searchComicByName = async (comicName) => {
-  await comicStore.searchComicByName(comicName); 
-  comics.value = comicStore.searchName; 
+  await comicStore.searchComicByName(comicName);
+  comics.value = comicStore.searchName;
   noResults.value = comics.value.length === 0;
 };
 
@@ -22,35 +23,32 @@ const searchComicByName = async (comicName) => {
 const fetchComicsByType = async (comicTypeName) => {
   if (comicTypeName) {
     await comicStore.searchComicByTypeName(comicTypeName);
-    comics.value = comicStore.searchComic; 
+    comics.value = comicStore.searchComic;
     noResults.value = comics.value.length === 0;
   }
 };
 
 // Hàm lưu lịch sử khi người dùng click vào truyện
 const historyComic = async (comicId) => {
-  const userData = JSON.parse(localStorage.getItem('user'));
+  const userData = JSON.parse(localStorage.getItem("user"));
   const userId = userData ? userData.id : null;
 
   if (userId && comicId) {
     await comicStore.historyComicAfterClick(userId, comicId);
   }
-}
+};
 
 // Hàm gọi khi component mount
 onMounted(() => {
   const comicTypeName = route.query.type;
   const searchQuery = route.query.search;
 
-  console.log("Comic Type:", comicTypeName);
-  console.log("Search Query:", searchQuery);
-
   if (comicTypeName) {
-    fetchComicsByType(comicTypeName); // Tìm theo thể loại
+    fetchComicsByType(comicTypeName);
   }
 
   if (searchQuery) {
-    searchComicByName(searchQuery); // Tìm theo tên
+    searchComicByName(searchQuery);
   }
 });
 
@@ -72,16 +70,21 @@ watch(
     }
   }
 );
+
+// Hàm load thêm truyện
+const loadMore = () => {
+  visibleCount.value += 4;
+};
 </script>
 
 <template>
-  <Header></Header>
-  <NavHeader></NavHeader>
+  <Header />
+  <NavHeader />
   <div class="comic-list">
     <p v-if="noResults" class="no-results">Không có kết quả</p>
 
     <router-link
-      v-for="comic in comics"
+      v-for="(comic, index) in comics.slice(0, visibleCount)"
       :key="comic.id"
       :to="`/DetailComic/${comic.id}`"
       @click="historyComic(comic.id)"
@@ -102,8 +105,13 @@ watch(
         </div>
       </div>
     </router-link>
+
+    <button v-if="visibleCount < comics.length" @click="loadMore" class="load-more">
+      Xem thêm
+    </button>
+
   </div>
-  <Footer></Footer>
+  <Footer />
 </template>
 
 
@@ -152,5 +160,21 @@ watch(
 
 .type {
   color: green;
+}
+
+.load-more {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.load-more:hover {
+  background-color: #45a049;
 }
 </style>

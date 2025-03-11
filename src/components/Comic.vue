@@ -12,19 +12,35 @@ const historyComic = async (comicId) => {
   if (userId && comicId) {
     await comicStore.historyComicAfterClick(userId, comicId);
   }
-}
+};
+
+// Lưu và lấy trạng thái trang từ localStorage
+const saveCurrentPage = (page) => {
+  localStorage.setItem('currentPage', page);
+};
+
+const getSavedPage = () => {
+  const savedPage = localStorage.getItem('currentPage');
+  return savedPage ? parseInt(savedPage) : 1; 
+};
 
 const displayedPages = computed(() => {
-    if (comicStore.totalPages <= 3) {
-        return Array.from({ length: comicStore.totalPages }, (_, i) => i + 1);
+    const total = comicStore.totalPages;
+    const current = comicStore.currentPage;
+
+    let pages = [];
+
+    if (total <= 5) {
+        pages = Array.from({ length: total }, (_, i) => i + 1);
+    } else if (current <= 3) {
+        pages = [1, 2, 3, "...", total];
+    } else if (current >= total - 2) {
+        pages = [1, "...", total - 2, total - 1, total];
+    } else {
+        pages = [1, "...", current - 1, current, current + 1, "...", total];
     }
-    if (comicStore.currentPage <= 3) {
-        return [1, 2, 3];
-    }
-    if (comicStore.currentPage >= comicStore.totalPages - 2) {
-        return [comicStore.totalPages - 2, comicStore.totalPages - 1, comicStore.totalPages];
-    }
-    return [comicStore.currentPage - 1, comicStore.currentPage, comicStore.currentPage + 1];
+
+    return pages;
 });
 
 const prevPage = () => {
@@ -40,11 +56,16 @@ const nextPage = () => {
 };
 
 const goToPage = (page) => {
-    comicStore.fetchComics(page);
+    if (page !== '...') {
+        comicStore.fetchComics(page);
+        saveCurrentPage(page); // Lưu lại trang khi người dùng chuyển trang
+    }
 };
 
+// Lấy trang đã lưu và khôi phục
 onMounted(() => {
-    comicStore.fetchComics();
+    const savedPage = getSavedPage();
+    comicStore.fetchComics(savedPage);
     historyComic();
 });
 </script>
@@ -69,18 +90,23 @@ onMounted(() => {
             <span class="pagination-numbers">
                 <span v-if="comicStore.currentPage > 3" class="page-number" @click="goToPage(1)">Đầu</span>
                 <span class="page-number" 
-                      v-for="page in displayedPages" 
-                      :key="page" 
+                      v-for="(page, index) in displayedPages" 
+                      :key="index" 
                       @click="goToPage(page)" 
                       :class="{ active: page === comicStore.currentPage }">
                     {{ page }}
                 </span>
-                <span v-if="comicStore.currentPage < comicStore.totalPages - 2" class="page-number" @click="goToPage(comicStore.totalPages)">Cuối</span>
+                <span v-if="comicStore.currentPage < comicStore.totalPages - 2" 
+                      class="page-number" 
+                      @click="goToPage(comicStore.totalPages)">
+                    Cuối
+                </span>
             </span>
             <button class="pagination-button" @click="nextPage" :disabled="comicStore.currentPage === comicStore.totalPages">▶</button>
         </div>
     </div>
 </template>
+
 
 <style scoped>
 .comic-container {

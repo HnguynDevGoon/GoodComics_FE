@@ -9,6 +9,17 @@ import { useRouter } from "vue-router";
 const comicStore = useComicStore();
 const router = useRouter();
 
+
+// Hàm lưu lịch sử khi người dùng click vào truyện
+const historyComic = async (comicId) => {
+  const userData = JSON.parse(localStorage.getItem('user'));
+  const userId = userData ? userData.id : null;
+
+  if (userId && comicId) {
+    await comicStore.historyComicAfterClick(userId, comicId);
+  }
+};
+
 // Hàm lấy lịch sử người dùng
 const getHistory = async () => {
   const userData = JSON.parse(localStorage.getItem("user"));
@@ -58,21 +69,22 @@ onMounted(async () => {
     <h1 class="history-title">Lịch sử đọc</h1>
     <div class="comic-container">
       <div
-        v-for="(comic, index) in comicStore.listHistory"
+        v-for="(history, index) in comicStore.listHistory"
         :key="index"
         class="comic-card"
       >
         <router-link
-          :to="`/DetailComic/${comic.id}`"
+          :to="`/DetailComic/${history.comicId}`"
+          @click="historyComic(history.comicId)"
           style="text-decoration: none; color: black"
         >
-          <img :src="comic.urlImg" alt="Comic Image" class="comic-image" />
+          <img :src="history.urlImg" alt="Comic Image" class="comic-image" />
           <div class="comic-info">
-            <h3 class="comic-title">{{ comic.comicName }}</h3>
-            <p class="comic-author">Tác giả: {{ comic.comicAuthor }}</p>
-            <p class="comic-genre">Thể loại: {{ comic.comicTypeName }}</p>
+            <h3 class="comic-title">{{ history.comicName }}</h3>
+            <p class="comic-author">Tác giả: {{ history.comicAuthor }}</p>
+            <p class="comic-genre">Thể loại: {{ history.comicTypeName }}</p>
             <p class="comic-history">
-              Lần đọc cuối: {{ formatDate(comic.lastRead) }}
+              Lần đọc cuối: {{ formatDate(history.lastRead) }}
             </p>
           </div>
         </router-link>

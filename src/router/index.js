@@ -12,6 +12,11 @@ import DetailComic from '../views/DetailComic.vue';
 import Hobby from '../views/Hobby.vue';
 import ListComic from '../views/ListComic.vue';
 import History from '../views/History.vue';
+import UserManagerment from '../admin/UserManagerment.vue';
+import HelloAdmin from '../admin/HelloAdmin.vue';
+import ComicManagerment from '../admin/ComicManagerment.vue';
+import UpdateComic from '../admin/UpdateComic.vue';
+import AdminAccount from '../admin/AdminAccount.vue';
 
 const routes = [
     {
@@ -85,6 +90,33 @@ const routes = [
         path: `/History`,
         name: "History",
         component: History,
+    },
+
+    // Dashboard
+    {
+        path: `/Dashboard`,
+        name: "Dashboard",
+        component: HelloAdmin,
+    },
+    {
+        path: `/UserManagerment`,
+        name: "UserManagerment",
+        component: UserManagerment,
+    },
+    {
+        path: `/ComicManagerment`,
+        name: "ComicManagerment",
+        component: ComicManagerment,
+    },
+    {
+        path: `/UpdateComic/:id`,
+        name: "UpdateComic",
+        component: UpdateComic,
+    },
+    {
+        path: `/AdminAccount`,
+        name: "AdminAccount",
+        component: AdminAccount
     },
 ];
 

@@ -5,10 +5,22 @@ import { useRouter } from 'vue-router';  // Thêm import useRouter
 import NavHeader from '../components/NavHeader.vue';
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
+import { useComicStore } from '../store/comicStore';
 
 const userStore = useUserStore();
+const comicStore = useComicStore();
 const router = useRouter();
 const hobbies = ref([]);  
+
+// Hàm lưu lịch sử khi người dùng click vào truyện
+const historyComic = async (comicId) => {
+  const userData = JSON.parse(localStorage.getItem('user'));
+  const userId = userData ? userData.id : null;
+
+  if (userId && comicId) {
+    await comicStore.historyComicAfterClick(userId, comicId);
+  }
+};
 
 onMounted(async () => {
   const userData = JSON.parse(localStorage.getItem("user"));
@@ -47,6 +59,7 @@ onMounted(async () => {
     <div v-for="(hobby, index) in hobbies" :key="index" class="comic-card">
       <router-link
         :to="`/DetailComic/${hobby.comicId}`"  
+        @click="historyComic(hobby.comicId)"
         style="text-decoration: none; color: black;"
       >
         <img :src="hobby.urlImg" alt="Comic Image" class="comic-image" />

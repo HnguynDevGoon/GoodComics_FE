@@ -1,6 +1,5 @@
-
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useUserStore } from "../store/userStore"; 
 import { useRouter } from "vue-router";
 import { useComicStore } from "../store/comicStore"; 
@@ -9,6 +8,8 @@ const userStore = useUserStore();
 const comicStore = useComicStore(); 
 const searchValue = ref(""); 
 const router = useRouter();
+const role = localStorage.getItem("user");
+
 
 // Hàm tìm kiếm và gọi API, sau đó chuyển hướng đến trang ListComic
 const searchComics = async () => {
@@ -41,14 +42,16 @@ const searchComics = async () => {
         <RouterLink v-if="!userStore.user" to="/Login">
           <i class="bx bx-user"></i> Tài khoản
         </RouterLink>
-        <RouterLink v-else to="/Profile">
-          <img v-if="userStore.user.urlavartar" :src="userStore.user.urlavartar" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+        <RouterLink v-else :to="role && JSON.parse(role).roleId === 1 ? '/Dashboard' : '/Profile'">
+          <img v-if="userStore.user.urlavartar" :src="userStore.user.urlavartar" alt="Avatar" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
           {{ userStore.user.username }}
         </RouterLink>
       </div>
     </div>
   </header>
 </template>
+
+
 
 
 <style scoped>

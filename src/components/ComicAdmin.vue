@@ -37,6 +37,7 @@ onMounted(() => {
   <div>
     <div class="search-comic-to-update">
       <input type="text" v-model="searchTerm" placeholder="Tìm kiếm truyện..." />
+      <RouterLink to="/AddComic" class="btn-add-comic">Thêm truyện</RouterLink>
     </div>
     <div class="comic-container">
       <router-link
@@ -68,6 +69,7 @@ onMounted(() => {
 }
 
 .search-comic-to-update input{
+  margin-right: 20px;
   width: 30%;
   padding: 10px 10px;
   border-radius: 8px;
@@ -76,12 +78,26 @@ onMounted(() => {
 
 }
 
+.btn-add-comic {
+  display: inline-block;
+  width: 10%;
+  padding: 9px;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  outline: none;
+  border: 2px solid #4CAF50;
+  text-align: center;
+  text-decoration: none;
+  color: black;
+}
+
 .comic-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
     padding: 20px;
-    max-width: 90%; 
+    max-width: 100%; 
     margin: 0 auto; 
 }
 

@@ -198,8 +198,37 @@ export const useComicStore = defineStore("comic", () => {
         }
     };
     
-    
-    
+    // 🛠 Hàm thêm comic
+    const addComic = async ({ comicName, comicContent, comicAuthor, createDate, urlImage, comicTypeId }) => {
+        try {
+            const formData = new FormData();
+            formData.append("ComicName", comicName);
+            formData.append("ComicContent", comicContent);
+            formData.append("ComicAuthor", comicAuthor);
+            formData.append("CreateDate", createDate);
+            formData.append("UrlImage", urlImage);
+            formData.append("ComicTypeId", comicTypeId);
+
+            const response = await axios.post(
+                "https://localhost:7064/api/Comic/CreateComic",
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                }
+            );
+
+            if (response.data.status === 200) {
+                return { success: true, message: response.data.message || "Thêm truyện thành công!" };
+            } else {
+                return { success: false, message: response.data.message || "Thêm truyện thất bại!" };
+            }
+        } catch (err) {
+            return { success: false, message: "Không thể kết nối tới server!" };
+        }
+    };
+
+
+
     return {
         comicTypes,
         fetchComicTypes,
@@ -223,5 +252,6 @@ export const useComicStore = defineStore("comic", () => {
         searchComicByName,
         historyComicAfterClick,
         getListHistory,
+        addComic,
     };
 });

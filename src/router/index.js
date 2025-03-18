@@ -17,6 +17,7 @@ import HelloAdmin from '../admin/HelloAdmin.vue';
 import ComicManagerment from '../admin/ComicManagerment.vue';
 import UpdateComic from '../admin/UpdateComic.vue';
 import AdminAccount from '../admin/AdminAccount.vue';
+import AddComic from '../admin/AddComic.vue';
 
 const routes = [
     {
@@ -109,6 +110,11 @@ const routes = [
         component: ComicManagerment,
     },
     {
+        path: `/AddComic`,
+        name: "AddComic",
+        component: AddComic,
+    },
+    {
         path: `/UpdateComic/:id`,
         name: "UpdateComic",
         component: UpdateComic,
@@ -124,5 +130,11 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
+
+router.beforeEach((to, from, next) => {
+    const userRole = JSON.parse(localStorage.getItem("user"))?.roleId;
+    next(to.path.startsWith("/Dashboard") && userRole !== 1 ? "/" : undefined);
+});
+
 
 export default router;

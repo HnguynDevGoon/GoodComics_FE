@@ -44,7 +44,7 @@ onMounted(() => {
       <li><RouterLink to="/Hobby"><i class='bx bx-heart-circle'></i> Yêu Thích</RouterLink></li>
       <li><RouterLink to="/History"><i class="bx bx-history"></i> Lịch Sử Đọc</RouterLink></li>
       <li><RouterLink to="/Location"><i class='bx bx-current-location'></i> Vị trí</RouterLink></li>
-      <li><RouterLink to="/"><i class='bx bx-message-dots'></i> Đánh giá</RouterLink></li>
+      <!-- <li><RouterLink to="/"><i class='bx bx-message-dots'></i> Đánh giá</RouterLink></li> -->
     </ul>
   </div>
 </template>

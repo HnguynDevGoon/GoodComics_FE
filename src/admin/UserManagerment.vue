@@ -88,16 +88,6 @@ const deleteUser = (userId) => {
 
 
 <style scoped>
-.main {
-  padding: 20px;
-}
-
-h1 {
-  text-align: center;
-  font-size: 28px;
-  color: #333;
-}
-
 .search-container {
   display: flex;
   justify-content: center;

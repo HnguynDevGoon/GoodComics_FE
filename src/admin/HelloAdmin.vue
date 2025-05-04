@@ -13,7 +13,6 @@ import Dashboard from "../components/Dashboard.vue";
           alt="Admin Image"
           class="admin-image"
         />
-        <h1 class="greeting-text">Xin chào Quản Trị Viên</h1>
       </div>
     </div>
   </div>
@@ -42,7 +41,6 @@ import Dashboard from "../components/Dashboard.vue";
   background-color: rgba(245, 245, 245, 0.825);
   border-radius: 10px;
   padding: 30px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
   width: 350px; 
   height: 450px; 
 }
@@ -52,11 +50,5 @@ import Dashboard from "../components/Dashboard.vue";
   height: auto;
   border-radius: 50%; 
   margin-bottom: 20px;
-}
-
-.greeting-text {
-  font-size: 24px;
-  font-weight: bold;
-  color: #000000;
 }
 </style>

@@ -1,14 +1,13 @@
-
 .container-dashboard {
   display: flex;
   height: 100vh;
-  background-color: #f1f2f6;
+  background-color: #f0f2f5;
 }
 
 .sidebar {
   width: 250px;
-  background: #004251;
-  color: white;
+  background: #ffffff; /* Màu nền sidebar trắng */
+  color: #1e293b;       /* Chữ xanh đen */
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -17,6 +16,7 @@
   position: sticky;
   top: 0;
   transition: width 0.3s ease-in-out;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.06);
 }
 
 .sidebar-collapsed {
@@ -27,29 +27,31 @@
   font-size: 24px;
   font-weight: bold;
   text-align: center;
-  color: #fff;
+  color: #0f172a; /* Xanh đậm */
   margin-bottom: 0px;
 }
 
 .sidebar-link {
-  color: white;
+  color: #1e293b;
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 12px 20px;
-  border-radius: 8px;
-  transition: background 0.3s, transform 0.3s;
+  border-radius: 10px;
+  transition: background 0.3s, transform 0.2s;
   font-size: 16px;
+  font-weight: 500;
 }
 
 .sidebar-link i {
   font-size: 22px;
+  color: #0ea5e9; /* Accent xanh ngọc */
 }
 
 .sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
+  background: #e0f2fe; /* Nhẹ nhàng xanh ngọc nhạt khi hover */
+  transform: translateX(4px);
 }
 
 .toggle-logout-container {
@@ -62,21 +64,26 @@
 .toggle-btn {
   background: none;
   border: none;
-  color: white;
+  color: #64748b;
   font-size: 24px;
   cursor: pointer;
   transition: transform 0.3s ease;
 }
 
+.toggle-btn:hover {
+  color: #0ea5e9;
+  transform: rotate(90deg);
+}
+
 .main {
   flex: 1;
   padding: 40px;
-  background-color: #f3f3f3;
+  background-color: #f8fafc;
   overflow: auto;
 }
 
 .main h1 {
-  color: #34495e;
+  color: #0f172a;
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 30px;

@@ -77,11 +77,11 @@ const deleteUser = (userId) => {
       </div>
 
       <!-- Phân trang -->
-      <div class="pagination">
+      <!-- <div class="pagination">
         <button @click="changePage(adminStore.currentPage - 1)" :disabled="adminStore.currentPage === 1">Trước</button>
         <span>{{ adminStore.currentPage }} / {{ adminStore.totalPages }}</span>
         <button @click="changePage(adminStore.currentPage + 1)" :disabled="adminStore.currentPage === adminStore.totalPages">Sau</button>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

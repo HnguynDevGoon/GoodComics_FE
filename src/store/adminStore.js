@@ -6,7 +6,7 @@ export const useAdminStore = defineStore("admin", () => {
     const users = ref([]);
     const loading = ref(false);
     const currentPage = ref(1); // Trang hiện tại
-    const pageSize = ref(10); // Mỗi trang có một người dùng
+    const pageSize = ref(999999); 
     
 
     const fetchUsers = async (pageNumber = 1, pageSize = 1) => {

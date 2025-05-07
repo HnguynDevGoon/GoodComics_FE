@@ -8,7 +8,7 @@ import GlobalDialog from './components/GlobalDialog.vue';
 // Pinia
 const pinia = createPinia();
 const app = createApp(App);
-app.use(pinia); // Đảm bảo Pinia được sử dụng trước khi mount
+app.use(pinia); 
 
 app.use(router);
 app.mount('#app');

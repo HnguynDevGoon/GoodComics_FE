@@ -131,10 +131,20 @@ const router = createRouter({
   routes,
 });
 
+const adminPaths = ["/Dashboard", "/HelloAdmin", "/ComicManagerment", "/AdminAccount", "/UserManagerment", "/AddComic", "/UpdateComic"];
+
 router.beforeEach((to, from, next) => {
-    const userRole = JSON.parse(localStorage.getItem("user"))?.roleId;
-    next(to.path.startsWith("/Dashboard") && userRole !== 1 ? "/" : undefined);
+  const userRole = JSON.parse(localStorage.getItem("user"))?.roleId;
+
+  const isAdminRoute = adminPaths.some(path => to.path.startsWith(path));
+  
+  if (isAdminRoute && userRole !== 1) {
+    next("/");
+  } else {
+    next();
+  }
 });
+  
 
 
 export default router;
